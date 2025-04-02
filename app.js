@@ -1,8 +1,11 @@
-var createError = require('http-errors');
+ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
+//Se carga el módulo de sqlite3
+ var sqlite3 = require('sqlite3');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -19,8 +22,79 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
+//se carga el modulo de knex
+//se inicializa knex con sqlite3
+
+var db = require('knex')(  {
+      client: 'sqlite3',
+      connection:{
+        filename: 'musica.sqlite'
+      },
+    useNullAsDefault: true,
+    }
+);
+
+// Estas rutas predefinidas no las vamos a usar
+//app.use('/', indexRouter);
+//app.use('/users', usersRouter);
+
+
+// RUTAS DEL USUARIO
+
+ //Rutas para artists
+app.get('/api/artists', function (req, res) {
+    db.select('ar.id', 'ar.name')
+      .from('artists as ar')
+      .then(function(data) {
+          res.json(data);
+      });
+});
+
+// Rutas para albums
+// Todos
+
+app.get('/api/albums', function (req, res) {
+    db.select('al.id', 'al.title', 'al.image', 'al.description' )
+      .from('albums as al')
+      .then(function(data) {
+          res.json(data);
+      });
+});
+
+// Seleccion por id
+ app.get('/api/albums/:id', function (req, res) {
+
+     // Como es un string lo convertimos en entero
+     let id =parseInt(req.params.id);
+     db.select('al.id', 'al.title', 'al.image', 'al.description' )
+         .from('albums as al')
+         .where('al.id', id)
+         .then(function(data) {
+             res.json(data);
+         });
+ });
+
+
+
+// Rutas para songs
+app.get('/api/songs', function (req, res) {
+    db.select('so.id', 'so.title', 'so.length')
+      .from('songs as so')
+      .then(function(data) {
+          res.json(data);
+      });
+});
+
+// Pedir os datos completos de todas las canciones
+
+app.get('/api/songs/all', function (req, res) {
+
+    db.select('so.id','so.title', 'so.title', 'al.title as album', 'ar.name as artist')
+    .from('songs as so')
+        .join('artists as ar', 'so.')
+})
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
