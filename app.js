@@ -92,7 +92,11 @@ app.get('/api/songs/all', function (req, res) {
 
     db.select('so.id','so.title', 'so.title', 'al.title as album', 'ar.name as artist')
     .from('songs as so')
-        .join('artists as ar', 'so.')
+        .join('albums as al', 'so.album_id', 'al.id')
+        .join('artists as ar', 'al.artist_id', 'ar.id')
+        .then(function(data) {
+            res.json(data);
+        })
 })
 
 
