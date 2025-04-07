@@ -55,11 +55,29 @@ app.get('/api/artists', function (req, res) {
 // Todos
 
 app.get('/api/albums', function (req, res) {
-    db.select('al.id', 'al.title', 'al.image', 'al.description' )
+    db.select('al.id', 'al.title', 'ar.name as artists', 'al.image', 'al.description' )
       .from('albums as al')
+        .join('artists as ar', 'al.artist_id', 'ar.id')
       .then(function(data) {
+
+
+          // desde la DB se devuelve un JSON que es un array
+          // Cada elemento del array e suna fila de la consulta
+          // El problema es que el script se está llamando tantas veces como filas tiene el array
+
+          // Ahora pasaremos a devolver un objeto JSON con un único cambo "albums" que
+          // contendrá el array con los resultados para llamara una única vez al array pero luego
+          // itera sobre "albums"
+          result = {}
+          result.albums = data;
+          res.json(result)
+
+          //tambien se podira haber echo así
+          // return {albums: data};
           res.json(data);
-      });
+      }).catch(function (error) {
+          console.log(error)
+    });
 });
 
 // Seleccion por id
@@ -90,14 +108,19 @@ app.get('/api/songs', function (req, res) {
 
 app.get('/api/songs/all', function (req, res) {
 
-    db.select('so.id','so.title', 'so.title', 'al.title as album', 'ar.name as artist')
+    db.select('so.id','so.title', 'so.length', 'al.title as album', 'ar.name as artist')
     .from('songs as so')
         .join('albums as al', 'so.album_id', 'al.id')
         .join('artists as ar', 'al.artist_id', 'ar.id')
         .then(function(data) {
             res.json(data);
-        })
-})
+        });
+});
+
+// Ver los datos en html
+
+
+
 
 
 // catch 404 and forward to error handler
