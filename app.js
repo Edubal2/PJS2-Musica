@@ -47,7 +47,12 @@ app.get('/api/artists', function (req, res) {
     db.select('ar.id', 'ar.name')
       .from('artists as ar')
       .then(function(data) {
-          res.json(data);
+
+          result = {}
+          result.artists = data;
+          res.json(result)
+
+
       });
 });
 
@@ -60,21 +65,13 @@ app.get('/api/albums', function (req, res) {
         .join('artists as ar', 'al.artist_id', 'ar.id')
       .then(function(data) {
 
-
-          // desde la DB se devuelve un JSON que es un array
-          // Cada elemento del array e suna fila de la consulta
-          // El problema es que el script se está llamando tantas veces como filas tiene el array
-
-          // Ahora pasaremos a devolver un objeto JSON con un único cambo "albums" que
-          // contendrá el array con los resultados para llamara una única vez al array pero luego
-          // itera sobre "albums"
           result = {}
           result.albums = data;
           res.json(result)
 
           //tambien se podira haber echo así
           // return {albums: data};
-          res.json(data);
+
       }).catch(function (error) {
           console.log(error)
     });
@@ -90,8 +87,28 @@ app.get('/api/albums', function (req, res) {
          .where('al.id', id)
          .then(function(data) {
              res.json(data);
-         });
+         }).catch(function (error) {
+         console.log(error)
+     });
  });
+
+
+ app.delete('/api/albums/:id', function (req, res) {
+
+     // Como es un string lo convertimos en entero
+     let id =parseInt(req.params.id);
+
+     db.delete()
+         .from('albums')
+         .where('id', id)
+         .then(function(data) {
+             res.json(data);
+         }).catch(function (error) {
+         console.log(error)
+     });
+
+ });
+
 
 
 
@@ -100,7 +117,11 @@ app.get('/api/songs', function (req, res) {
     db.select('so.id', 'so.title', 'so.length')
       .from('songs as so')
       .then(function(data) {
-          res.json(data);
+
+          result = {}
+          result.songs = data;
+          res.json(result)
+
       });
 });
 
@@ -113,7 +134,12 @@ app.get('/api/songs/all', function (req, res) {
         .join('albums as al', 'so.album_id', 'al.id')
         .join('artists as ar', 'al.artist_id', 'ar.id')
         .then(function(data) {
-            res.json(data);
+
+            result = {}
+            result.songs = data;
+            res.json(result)
+
+
         });
 });
 

@@ -3,8 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
 </head>
 <body>
+<h1>AIUDA</h1>
 
+<a href="/">(Main Page)</a>
+<br>
+<br>
+
+<script id="artistas_template" type="text/x-jsrender-template">
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom del Artista</th>
+        </tr>
+        </thead>
+        <tbody>
+            {{for artists}}
+                <tr>
+                    <td>{{:id}}</td>
+                    <td>{{:name}}</td>
+                </tr>
+            {{/for}}
+        </tbody>
+    </table>
+</script>
+
+<div id="app"></div>
+
+
+<script>
+    $.getJSON('/api/artists/', function (data) {
+        // ver resultado
+        console.log(data);
+        // Con los resultados se rederiza el template
+        let html = $("#artistas_template").render(data);
+        // el HTML final se po ne con jquery en el DIV con id "app"
+        $("#app").html(html);
+    });
+</script>
 </body>
 </html>

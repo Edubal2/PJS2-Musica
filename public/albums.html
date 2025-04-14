@@ -3,78 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
 </head>
 <body>
 <h1>AIUDA</h1>
 
-<script id="musica_template" type="text/x-jsrender-template">
+<a href="/">(Main Page)</a>
+<br>
+<br>
+
+<script id="albums_template" type="text/x-jsrender-template">
     <table>
         <thead>
-            <tr>
-                <div class="col-sm-1">
-                    <th>id</th>
-                </div>
-                <div class="col-sm-3">
-                    <th>title</th>
-                </div>
-                <div class="col-sm-3">
-                    <th>group</th>
-                </div>
-                <div class="col-sm-3">
-                    <th>image</th>
-                </div>
-                <div class="col-sm-3">
-                    <th>description</th>
-                </div>
-                <div class="col-sm-3">
-                    <th>Actions</th>
-                </div>
-            </tr>
+        <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>group</th>
+            <th>image</th>
+            <th>description</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-
-                {{for albums}}
-                    <tr>
-                        <td>{{:id}}</td>
-                        <td>{{:title}}</td>
-                        <td>{{:artists}}</td>
-                        <td><img src="{{:image}}"></td>
-                        <td><textarea>{{:description}}</textarea></td>
-                        <td>
-                            <a href="" class="modify btn btn-warning">Modify</a>
-                            <a href="" class="delete btn btn-danger">Delete</a>
-                        </td>
-                    </tr>
-                    {{/for}}
-
+        {{for albums}}
+            <tr>
+                <td>{{:id}}</td>
+                <td>{{:title}}</td>
+                <td>{{:artists}}</td>
+                <td><img src="{{:image}}"></td>
+                <td><textarea>{{:description}}</textarea></td>
+                <td>
+                    <!-- href="#" indica que el salto será a la página actual -->
+                    <!-- data-id="" envía junto con el evento el valor id="" -->
+                    <a href="" data-id="{{:id}}" class="modify button warning">Modify</a>
+                    <a href="" data-id="{{:id}}" class="delete button error">Delete</a>
+                </td>
+            </tr>
+        {{/for}}
         </tbody>
     </table>
 </script>
 
 <div id="app"></div>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
 <script>
-    $.getJSON('/api/albums/', function (data) {
 
-        // ver resultado
-        console.log(data);
+    function deleteAlbums(event){
 
-        // Con los resultados se rederiza el template
-        let html = $("#musica_template").render(data);
+        event.preventDefault();
 
-        // el HTML final se po ne con jquery en el DIV con id "app"
-        $("#app").html(html);
+        let id = $(this).data("id")
 
-        // se selecciona todos los elemntos con class 'delete'
-        $(".delete").on("click", function (event){
-
+        $.ajax({
+            url:'/api/albums/' + id,
+            type: 'DELETE'
         })
+
+            .then(function (result) {
+                showAlbums()
+            })
+
+            .catch(function (error) {
+                console.log(error)
+            })
+
+    }
+
+    function showAlbums() {
+
+        // llamada asincrona a la API
+        $.getJSON('/api/albums/', function (data) {
+            // ver resultado
+            console.log(data);
+            // Con los resultados se rederiza el template
+            let html = $("#albums_template").render(data);
+            // el HTML final se po ne con jquery en el DIV con id "app"
+            $("#app").html(html);
+            // Se seleccioan todos los elementos en el DIV con id "app
+            $(".delete").on("click", deleteAlbums);
+        });
+    }
+
+    $(document).ready(function () {
+        showAlbums()
     });
 </script>
 
