@@ -77,6 +77,26 @@ app.get('/api/albums', function (req, res) {
     });
 });
 
+ app.post('/api/albums', function (req, res) {
+
+     let data_form = req.body;
+     console.log('app.je app.post(). Params:', data_form)
+
+     db.insert(data_form)
+         .into('albums')
+         .then(function(data) {
+
+            res.json(data)
+             console.log(data)
+         }).catch(function (error) {
+         console.log(error)
+     });
+
+ });
+
+
+
+
 // Seleccion por id
  app.get('/api/albums/:id', function (req, res) {
 
@@ -93,10 +113,12 @@ app.get('/api/albums', function (req, res) {
  });
 
 
+
  app.delete('/api/albums/:id', function (req, res) {
 
      // Como es un string lo convertimos en entero
      let id =parseInt(req.params.id);
+     console.log('WILL DELETE' + id);
 
      db.delete()
          .from('albums')

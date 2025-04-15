@@ -8,83 +8,136 @@
     <link rel="stylesheet" href="/stylesheets/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
 </head>
 <body>
-<h1>AIUDA</h1>
+<h1>Albums</h1>
 
-<a href="/">(Main Page)</a>
-<br>
-<br>
+<div class="container">
+    <div class="row">
+        <a href="/">(Main Page)</a>
+        <br>
+        <br>
 
-<script id="albums_template" type="text/x-jsrender-template">
-    <table>
-        <thead>
-        <tr>
-            <th>id</th>
-            <th>title</th>
-            <th>group</th>
-            <th>image</th>
-            <th>description</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{for albums}}
-            <tr>
-                <td>{{:id}}</td>
-                <td>{{:title}}</td>
-                <td>{{:artists}}</td>
-                <td><img src="{{:image}}"></td>
-                <td><textarea>{{:description}}</textarea></td>
-                <td>
-                    <!-- href="#" indica que el salto será a la página actual -->
-                    <!-- data-id="" envía junto con el evento el valor id="" -->
-                    <a href="" data-id="{{:id}}" class="modify button warning">Modify</a>
-                    <a href="" data-id="{{:id}}" class="delete button error">Delete</a>
-                </td>
-            </tr>
-        {{/for}}
-        </tbody>
-    </table>
-</script>
 
-<div id="app"></div>
+        <script id="add_album_template" type="text/x-handlebars-template">
+            <h1>Insert Album</h1>
+            <form id="add_album_form">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title">
+                <br>
+                <label for="artists">Artist</label>
+                <select id="artists" name=artist_id">
+                    {{for artists}}
+                        <option value="{{:id}}">{{:name}}</option>
+                    {{/for}}
+                </select>
+                <br>
+                <label for="iamage">Image</label>
+                <input type="text" id="image" name="image">
+                <br>
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description">
+                <br>
+                <input type="submit" class="add_album_form">
+            </form>
+        </script>
 
+
+        <script id="show_albums_template" type="text/x-jsrender-template">
+            <a href="#" class="add button mainButton">Add</a>
+            
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{for albums}}
+                    <tr>
+                        <td>{{:id}}</td>
+                        <td>{{:title}}</td>
+                        <td>{{:artists}}</td>
+                        <td><img src="{{:image}}"></td>
+                        <td><textarea>{{:description}}</textarea></td>
+                        <td>
+                            <!-- href="#" indica que el salto será a la página actual -->
+                            <!-- data-id="" envía junto con el evento el valor id="" -->
+                            <a href="" data-id="{{:id}}" class="modify button warning">Modify</a>
+                            <a href="" data-id="{{:id}}" class="delete button error">Delete</a>
+                        </td>
+                    </tr>
+                {{/for}}
+                </tbody>
+            </table>
+        </script>
+
+        <div id="app"></div>
+    </div>
+</div>
 <script>
 
-    function deleteAlbums(event){
+    function addAlbumForm(event) {
+        event.preventDefault();
+        let form = $("#add_album_form");
 
+        let parametros = form.serializeObject();
+
+        $.post('/api/albums/', parametros, function (result) {
+            showAlbums()
+        }).catch(function (error) {
+            console.log(error)
+        })
+    }
+
+
+
+
+    function addAlbums(event) {
+        event.preventDefault();
+
+        $.getJSON('/api/artists/', function (artists) {
+            let html = $("#add_album_template").render(artists);
+            $("#app").html(html);
+
+            $(".add_album_form").on("click", addAlbumForm)
+
+
+        });
+    }
+
+    function deleteAlbums(event){
         event.preventDefault();
 
         let id = $(this).data("id")
 
+        console.log('function deleteAlbums id:' + id)
         $.ajax({
             url:'/api/albums/' + id,
             type: 'DELETE'
+        }).then(function (result) {
+            showAlbums()
+        }).catch(function (error) {
+            console.log(error)
         })
-
-            .then(function (result) {
-                showAlbums()
-            })
-
-            .catch(function (error) {
-                console.log(error)
-            })
-
     }
 
     function showAlbums() {
 
-        // llamada asincrona a la API
         $.getJSON('/api/albums/', function (data) {
-            // ver resultado
             console.log(data);
-            // Con los resultados se rederiza el template
-            let html = $("#albums_template").render(data);
-            // el HTML final se po ne con jquery en el DIV con id "app"
+            let html = $("#show_albums_template").render(data);
             $("#app").html(html);
-            // Se seleccioan todos los elementos en el DIV con id "app
+
             $(".delete").on("click", deleteAlbums);
+            $(".add").on("click", addAlbums)
+
         });
     }
 
