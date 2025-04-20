@@ -15,25 +15,48 @@
 
 <div class="container">
     <div class="row">
-        <a href="/">(Main Page)</a>
+        <a href="/" class="button success">Inicio</a>
         <br>
         <br>
 
+        <script id="modify_albums_template" type="text/x-jsrender-template">
+            <h1>Modify Album</h1>
+            <form id="modifyAlbumForm">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" value="{{:album.title}}">
+                <br>
+                <label for="artists">Artist</label>
+                <select id="artist" name="artist_id">
+                    {{for artists.artists}}
+                    <option value="{{:id}}">{{:name}}</option>
+                    {{/for}}
+                </select>
+                <br>
+                <label for="image">Image</label>
+                <input type="text" id="image" name="image" value="{{:album.image}}">
+                <br>
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" value="{{:album.description}}">
+                <br>
+                <input type="submit" class="add_album_submit" value="modificar">
+            </form>
+        </script>
 
-        <script id="add_album_template" type="text/x-handlebars-template">
+
+        <script id="add_album_template" type="text/x-jsrender-template">
             <h1>Insert Album</h1>
             <form id="add_album_form">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title">
                 <br>
                 <label for="artists">Artist</label>
-                <select id="artists" name=artist_id">
+                <select id="artist" name="artist_id">
                     {{for artists}}
                         <option value="{{:id}}">{{:name}}</option>
                     {{/for}}
                 </select>
                 <br>
-                <label for="iamage">Image</label>
+                <label for="image">Image</label>
                 <input type="text" id="image" name="image">
                 <br>
                 <label for="description">Description</label>
@@ -42,7 +65,6 @@
                 <input type="submit" class="add_album_form">
             </form>
         </script>
-
 
         <script id="show_albums_template" type="text/x-jsrender-template">
             <a href="#" class="add button mainButton">Add</a>
@@ -87,7 +109,7 @@
         event.preventDefault();
         let form = $("#add_album_form");
 
-        let parametros = form.serializeObject();
+        let parametros = form.serialize();
 
         $.post('/api/albums/', parametros, function (result) {
             showAlbums()
@@ -95,9 +117,6 @@
             console.log(error)
         })
     }
-
-
-
 
     function addAlbums(event) {
         event.preventDefault();
@@ -128,13 +147,52 @@
         })
     }
 
+    function getModifyAlbumsFormParams(event){
+        event.preventDefault();
+
+        let form = $('#modifyAlbumForm');
+
+        // let parameters = form.serialize();
+
+        console.log(parameters)
+
+    }
+
+    function showModifyAlbumsForm(event){
+        event.preventDefault();
+
+        let id = $(this).data("id");
+        console.log(id)
+
+        $.getJSON('/api/albums/' + id, function (dataAlbums) {
+            $.getJSON('/api/albums/' + id, function (dataAlbums) {
+                $.getJSON('/api/artists/', function (dataArtists) {
+                    let album = dataAlbums[0]
+
+                    let data = {
+                        'album': album,
+                        'artists': dataArtists
+                    }
+                    console.log(data)
+
+                    let html = $("#modify_albums_template").render(data);
+                    $("#app").html(html);
+
+                    $('.add_album_submit').on('click', getModifyAlbumsFormParams)
+
+                });
+            });
+        });
+    }
+
     function showAlbums() {
 
         $.getJSON('/api/albums/', function (data) {
-            console.log(data);
+
             let html = $("#show_albums_template").render(data);
             $("#app").html(html);
 
+            $(".modify").on("click", showModifyAlbumsForm);
             $(".delete").on("click", deleteAlbums);
             $(".add").on("click", addAlbums)
 
