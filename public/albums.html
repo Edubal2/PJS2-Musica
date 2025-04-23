@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-
+    <title>Albums</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/picnic">
     <link rel="stylesheet" href="/stylesheets/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -38,10 +37,9 @@
                 <label for="description">Description</label>
                 <input type="text" id="description" name="description" value="{{:album.description}}">
                 <br>
-                <input type="submit" class="add_album_submit" value="modificar">
+                <input type="submit" class="add_album_submit" value="modificar" data-id="{{:album.id}}">
             </form>
         </script>
-
 
         <script id="add_album_template" type="text/x-jsrender-template">
             <h1>Insert Album</h1>
@@ -103,8 +101,9 @@
         <div id="app"></div>
     </div>
 </div>
-<script>
 
+<script>
+    // ADD
     function addAlbumForm(event) {
         event.preventDefault();
         let form = $("#add_album_form");
@@ -117,7 +116,6 @@
             console.log(error)
         })
     }
-
     function addAlbums(event) {
         event.preventDefault();
 
@@ -131,6 +129,7 @@
         });
     }
 
+    // DELETE
     function deleteAlbums(event){
         event.preventDefault();
 
@@ -147,17 +146,24 @@
         })
     }
 
+    // MODIFY
     function getModifyAlbumsFormParams(event){
         event.preventDefault();
 
         let form = $('#modifyAlbumForm');
 
-        // let parameters = form.serialize();
+        let parameters = form.serializeObject();
 
-        console.log(parameters)
+        let id = $(this).data("id");
+
+        $.post('/api/albums/' + id, parameters, function (data){
+            showAlbums()
+        }).catch(function (error) {
+            console.log(error)
+        });
+
 
     }
-
     function showModifyAlbumsForm(event){
         event.preventDefault();
 
@@ -185,6 +191,7 @@
         });
     }
 
+    // GET
     function showAlbums() {
 
         $.getJSON('/api/albums/', function (data) {

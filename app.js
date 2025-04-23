@@ -77,6 +77,7 @@ app.get('/api/albums', function (req, res) {
     });
 });
 
+// ADD
  app.post('/api/albums', function (req, res) {
 
      let data_form = req.body;
@@ -94,6 +95,21 @@ app.get('/api/albums', function (req, res) {
 
  });
 
+ //Modify
+ app.post('/api/albums/:id', function (req, res) {
+    let id = req.params.id;
+    let albumData = req.body;
+
+    db('Albums')
+        .update(albumData)
+        .where('id', id)
+        .then(function(data) {
+            res.json(data)
+        })
+        .catch(function (error) {
+            logger.error('ERROR:', error);
+        })
+ });
 
 
 
