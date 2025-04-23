@@ -117,7 +117,7 @@ app.get('/api/albums', function (req, res) {
  app.get('/api/albums/:id', function (req, res) {
 
      // Como es un string lo convertimos en entero
-     let id =parseInt(req.params.id);
+     let id = parseInt(req.params.id);
      db.select('al.id', 'al.title', 'al.image', 'al.description' )
          .from('albums as al')
          .where('al.id', id)
@@ -129,11 +129,11 @@ app.get('/api/albums', function (req, res) {
  });
 
 
-
+// DELETE
  app.delete('/api/albums/:id', function (req, res) {
 
      // Como es un string lo convertimos en entero
-     let id =parseInt(req.params.id);
+     let id = parseInt(req.params.id);
      console.log('WILL DELETE' + id);
 
      db.delete()
@@ -151,7 +151,8 @@ app.get('/api/albums', function (req, res) {
 
 
 // Rutas para songs
-app.get('/api/songs', function (req, res) {
+// GET
+app.get('/api/songs/normal', function (req, res) {
     db.select('so.id', 'so.title', 'so.length')
       .from('songs as so')
       .then(function(data) {
@@ -163,9 +164,77 @@ app.get('/api/songs', function (req, res) {
       });
 });
 
-// Pedir os datos completos de todas las canciones
+// DELETE
+// Seleccion por id
+ app.get('/api/songs/:id', function (req, res) {
 
-app.get('/api/songs/all', function (req, res) {
+     let id = parseInt(req.params.id);
+     db.select('so.id', 'so.title', 'so.length')
+         .from('songs as so')
+            .where('so.id', id)
+         .then(function(data) {
+             res.json(data);
+         }).catch(function (error) {
+         console.log(error)
+     });
+ });
+
+
+ app.delete('/api/songs/:id', function (req, res) {
+
+     let id = parseInt(req.params.id);
+     console.log('WILL DELETE' + id);
+
+     db.delete()
+         .from('songs')
+         .where('id', id)
+         .then(function(data) {
+             res.json(data);
+         }).catch(function (error) {
+         console.log(error)
+     });
+
+ });
+
+// ADD
+ app.post('/api/songs', function (req, res) {
+
+     let data_form = req.body;
+     console.log('app.je app.post(). Params:', data_form)
+
+     db.insert(data_form)
+         .into('songs')
+         .then(function(data) {
+
+             res.json(data)
+             console.log(data)
+         }).catch(function (error) {
+         console.log(error)
+     });
+
+ });
+
+// Modify
+ app.post('/api/songs/:id', function (req, res) {
+     let id = req.params.id;
+     let albumData = req.body;
+
+     db('Songs')
+         .update(albumData)
+         .where('id', id)
+         .then(function(data) {
+             res.json(data)
+         })
+         .catch(function (error) {
+             logger.error('ERROR:', error);
+         })
+ });
+
+
+
+// Pedir los datos completos de todas las canciones
+
+app.get('/api/songs', function (req, res) {
 
     db.select('so.id','so.title', 'so.length', 'al.title as album', 'ar.name as artist')
     .from('songs as so')

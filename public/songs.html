@@ -7,51 +7,210 @@
     <link rel="stylesheet" href="/stylesheets/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js"
+            referrerpolicy="no-referrer"></script>
 </head>
 <body>
-<h1>AIUDA</h1>
+<h1>Songs</h1>
 
-<a href="index.html">(Main Page)</a>
+<a href="/" class="button success">Inicio</a>
 <br>
 <br>
+<div class="container">
+    <div class="row">
+        <!-- Modify songs -->
+        <script id="modify_songs_template" type="text/x-jsrender-template">
+            <h1>Modify Album</h1>
+            <form id="modifySongsForm">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" value="{{:song.title}}">
+                <br>
+                <label for="length">Length</label>
+                <input type="text" id="length" name="length" value="{{:song.length}}"
+                       pattern="^[0-5]?\d:[0-5]\d$"
+                       placeholder="mm:ss">
+                <br>
+                <label for="albums">Album</label>
+                <select id="album" name="album_id">
+                    {{for albums.albums}}
+                    <option value="{{:id}}">{{:title}}</option>
+                    {{/for}}
+                </select>
+                <br>
+                <input type="submit" class="add_songs_submit" value="modificar" data-id="{{:song.id}}">
+            </form>
+        </script>
+        <!-- Add songs-->
+        <script id="add_songs_template" type="text/x-jsrender-template">
+            <h1>Insert Song </h1>
+            <form id="add_songs_form">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title">
+                <br>
+                <label for="length">Length</label>
+                <input type="text" id="length" name="length"
+                       pattern="^[0-5]?\d:[0-5]\d$"
+                       placeholder="mm:ss">
+                <br>
+                <label for="albums">Album</label>
+                <select id="albums" name="album_id">
+                    {{for albums}}
+                    <option value="{{:id}}">{{:title}}</option>
+                    {{/for}}
+                </select>
+                <br>
+                <input type="submit" id="add_songs_form_submit">
+            </form>
+        </script>
+        <!-- Show songs -->
+        <script id="show_songs_template" type="text/x-jsrender-template">
 
-<script id="songs_template" type="text/x-jsrender-template">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Length</th>
-                <th>Album</th>
-                <th>Artist</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{for songs}}
+            <a href="#/add" class="button mainButton">Add</a>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Length</th>
+                    <th>Album</th>
+                    <th>Artist</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{for songs}}
                 <tr>
                     <td>{{:id}}</td>
                     <td>{{:title}}</td>
                     <td>{{:length}}</td>
                     <td>{{:album}}</td>
                     <td>{{:artist}}</td>
+                    <td>
+                        <a href="#/modify?id={{:id}}" class="button warning">Modify</a>
+                        <a href="#/delete?id={{:id}}" class="button error">Delete</a>
+                    </td>
                 </tr>
-            {{/for}}
-        </tbody>
-    </table>
-</script>
+                {{/for}}
+                </tbody>
+            </table>
+        </script>
 
-<div id="app"></div>
-
+        <div id="app"></div>
+    </div>
+</div>
 
 <script>
-    $.getJSON('/api/songs/all/', function (data) {
-        // ver resultado
-        console.log(data);
-        // Con los resultados se rederiza el template
-        let html = $("#songs_template").render(data);
-        // el HTML final se po ne con jquery en el DIV con id "app"
-        $("#app").html(html);
+
+    const router = new Navigo('/', {hash:true});
+
+    // SE definen las rutas
+    router
+        .on('/', showSongs)
+        .on('/songs.html', showSongs)
+        .on('/add', addSongs)
+        .on('/modify', showModifySongsForm)
+        .on('/delete', deleteSongs)
+        .resolve();
+
+    // MODIFY
+    function getModifySongsFormParams(event){
+        event.preventDefault();
+
+        let form = $('#modifySongsForm');
+
+        let parameters = form.serializeObject();
+
+        let id = $(this).data("id");
+
+        $.post('/api/songs/' + id, parameters, function (data){
+            showSongs()
+        }).catch(function (error) {
+            console.log(error)
+        });
+
+
+    }
+    function showModifySongsForm(params){
+
+        let id = params.params.id;
+
+        $.getJSON('/api/songs/' + id, function (dataSongs) {
+            $.getJSON('/api/songs/' + id, function (dataSongs) {
+                $.getJSON('/api/albums/', function (dataAlbums) {
+                    let song = dataSongs[0]
+
+                    let data = {
+                        'song': song,
+                        'albums': dataAlbums
+                    }
+                    console.log(data)
+
+                    let html = $("#modify_songs_template").render(data);
+                    $("#app").html(html);
+
+                    $('.add_songs_submit').on('click', getModifySongsFormParams)
+
+                });
+            });
+        });
+    }
+
+
+    // ADD
+    function addSongsForm(event) {
+        event.preventDefault();
+        let form = $("#add_songs_form");
+
+        let parametros = form.serialize();
+
+        $.post('/api/songs/', parametros, function (result) {
+            router.navigate('/')
+        }).catch(function (error) {
+            console.log(error)
+        })
+    }
+    function addSongs(){
+
+
+        $.getJSON('/api/albums/', function (albums) {
+            let html = $("#add_songs_template").render(albums);
+            $("#app").html(html);
+
+            $("#add_songs_form_submit").on("click", addSongsForm)
+        });
+    }
+
+    // DELETE
+    function deleteSongs(params){
+        let id = params.params.id;
+
+        $.ajax({
+            url:'/api/songs/' + id,
+            type: 'DELETE'
+        }).then(function (result) {
+            router.navigate('/')
+        }).catch(function (error) {
+            console.log(error)
+        })
+    }
+
+    // GET
+    function showSongs() {
+        $.getJSON('/api/songs/', function (data) {
+
+            let html = $("#show_songs_template").render(data);
+            $("#app").html(html);
+        });
+    }
+
+    $(document).ready(function () {
+        //showAlbums();
+        // La ruta raiz es relativa al documento actual album.html
+        router.navigate('/')
     });
+
 </script>
 </body>
 </html>
