@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <h1>Albums</h1>
@@ -17,7 +18,7 @@
         <a href="/" class="button success">Inicio</a>
         <br>
         <br>
-
+        <!-- Modify Album -->
         <script id="modify_albums_template" type="text/x-jsrender-template">
             <h1>Modify Album</h1>
             <form id="modifyAlbumForm">
@@ -40,8 +41,8 @@
                 <input type="submit" class="add_album_submit" value="modificar" data-id="{{:album.id}}">
             </form>
         </script>
-
-        <script id="add_album_template" type="text/x-jsrender-template">
+        <!-- Add album -->
+        <script id="add_albums_template" type="text/x-jsrender-template">
             <h1>Insert Album</h1>
             <form id="add_album_form">
                 <label for="title">Title</label>
@@ -60,12 +61,13 @@
                 <label for="description">Description</label>
                 <input type="text" id="description" name="description">
                 <br>
-                <input type="submit" class="add_album_form">
+                <input type="submit" id="add_album_form_submit">
             </form>
         </script>
-
+        <!-- Show album -->
         <script id="show_albums_template" type="text/x-jsrender-template">
-            <a href="#" class="add button mainButton">Add</a>
+
+            <a href="#/add" class="button mainButton">Add</a>
             
             <table>
                 <thead>
@@ -89,8 +91,8 @@
                         <td>
                             <!-- href="#" indica que el salto será a la página actual -->
                             <!-- data-id="" envía junto con el evento el valor id="" -->
-                            <a href="" data-id="{{:id}}" class="modify button warning">Modify</a>
-                            <a href="" data-id="{{:id}}" class="delete button error">Delete</a>
+                            <a href="#/modify?id={{:id}}"  class="button warning">Modify</a>
+                            <a href="#/delete?id={{:id}}"  class="button error">Delete</a>
                         </td>
                     </tr>
                 {{/for}}
@@ -102,7 +104,22 @@
     </div>
 </div>
 
+
+<!-- SCRIPTS DEL USUARIO -->
 <script>
+    // Creacin del router como una constante
+    const router = new Navigo('/', {hash:true});
+
+    // SE definen las rutas
+    router
+        .on('/', showAlbums)
+        .on('/albums.html', showAlbums)
+        .on('/add', addAlbums)
+        .on('/modify', showModifyAlbumsForm)
+        .on('/delete', deleteAlbums)
+        .resolve();
+
+
     // ADD
     function addAlbumForm(event) {
         event.preventDefault();
@@ -111,36 +128,33 @@
         let parametros = form.serialize();
 
         $.post('/api/albums/', parametros, function (result) {
-            showAlbums()
+            router.navigate('/')
         }).catch(function (error) {
             console.log(error)
         })
     }
-    function addAlbums(event) {
-        event.preventDefault();
+    function addAlbums() {
 
         $.getJSON('/api/artists/', function (artists) {
-            let html = $("#add_album_template").render(artists);
+            let html = $("#add_albums_template").render(artists);
             $("#app").html(html);
 
-            $(".add_album_form").on("click", addAlbumForm)
+            $("#add_album_form_submit").on("click", addAlbumForm)
 
 
         });
     }
 
     // DELETE
-    function deleteAlbums(event){
-        event.preventDefault();
+    function deleteAlbums(params) {
 
-        let id = $(this).data("id")
+        let id = params.params.id;
 
-        console.log('function deleteAlbums id:' + id)
         $.ajax({
             url:'/api/albums/' + id,
             type: 'DELETE'
         }).then(function (result) {
-            showAlbums()
+            router.navigate('/')
         }).catch(function (error) {
             console.log(error)
         })
@@ -164,11 +178,11 @@
 
 
     }
-    function showModifyAlbumsForm(event){
-        event.preventDefault();
+    function showModifyAlbumsForm(params){
 
-        let id = $(this).data("id");
-        console.log(id)
+
+
+        let id = params.params.id;
 
         $.getJSON('/api/albums/' + id, function (dataAlbums) {
             $.getJSON('/api/albums/' + id, function (dataAlbums) {
@@ -199,15 +213,14 @@
             let html = $("#show_albums_template").render(data);
             $("#app").html(html);
 
-            $(".modify").on("click", showModifyAlbumsForm);
-            $(".delete").on("click", deleteAlbums);
-            $(".add").on("click", addAlbums)
 
         });
     }
 
     $(document).ready(function () {
-        showAlbums()
+        //showAlbums();
+        // La ruta raiz es relativa al documento actual album.html
+        router.navigate('/')
     });
 </script>
 
