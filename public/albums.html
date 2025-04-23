@@ -26,7 +26,7 @@
                 <input type="text" id="title" name="title" value="{{:album.title}}">
                 <br>
                 <label for="artists">Artist</label>
-                <select id="artist" name="artist_id">
+                <select id="artists" name="artist_id">
                     {{for artists.artists}}
                     <option value="{{:id}}">{{:name}}</option>
                     {{/for}}
@@ -179,8 +179,6 @@
 
     }
     function showModifyAlbumsForm(params){
-
-
 
         let id = params.params.id;
 

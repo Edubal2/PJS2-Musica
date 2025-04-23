@@ -214,6 +214,22 @@ app.get('/api/songs/normal', function (req, res) {
 
  });
 
+// Modify
+ app.post('/api/songs/:id', function (req, res) {
+     let id = req.params.id;
+     let albumData = req.body;
+
+     db('Songs')
+         .update(albumData)
+         .where('id', id)
+         .then(function(data) {
+             res.json(data)
+         })
+         .catch(function (error) {
+             logger.error('ERROR:', error);
+         })
+ });
+
 
 
 // Pedir los datos completos de todas las canciones
