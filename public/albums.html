@@ -38,7 +38,7 @@
                 <label for="description">Description</label>
                 <input type="text" id="description" name="description" value="{{:album.description}}">
                 <br>
-                <input type="submit" class="add_album_submit" value="modificar">
+                <input type="submit" class="add_album_submit" value="modificar" data-id="{{:album.id}}">
             </form>
         </script>
 
@@ -152,9 +152,16 @@
 
         let form = $('#modifyAlbumForm');
 
-        // let parameters = form.serialize();
+        let parameters = form.serializeObject();
 
-        console.log(parameters)
+        let id = $(this).data("id");
+
+        $.post('/api/albums/' + id, parameters, function (data){
+            showAlbums()
+        }).catch(function (error) {
+            console.log(error)
+        });
+
 
     }
 
