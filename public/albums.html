@@ -8,19 +8,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js"
+            referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <h1>Albums</h1>
 
 <div class="container">
     <div class="row">
-        <a href="/" class="button success">Inicio</a>
-        <br>
-        <br>
         <!-- Modify Album -->
         <script id="modify_albums_template" type="text/x-jsrender-template">
-            <h1>Modify Album</h1>
+            <h1>Modify Album {{:album.id}}</h1>
             <form id="modifyAlbumForm">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" value="{{:album.title}}">
@@ -41,7 +39,7 @@
                 <input type="submit" class="add_album_submit" value="modificar" data-id="{{:album.id}}">
             </form>
         </script>
-        <!-- Add album -->
+        <!-- Add Album -->
         <script id="add_albums_template" type="text/x-jsrender-template">
             <h1>Insert Album</h1>
             <form id="add_album_form">
@@ -51,7 +49,7 @@
                 <label for="artists">Artist</label>
                 <select id="artist" name="artist_id">
                     {{for artists}}
-                        <option value="{{:id}}">{{:name}}</option>
+                    <option value="{{:id}}">{{:name}}</option>
                     {{/for}}
                 </select>
                 <br>
@@ -64,11 +62,11 @@
                 <input type="submit" id="add_album_form_submit">
             </form>
         </script>
-        <!-- Show album -->
+        <!-- Show Album -->
         <script id="show_albums_template" type="text/x-jsrender-template">
 
             <a href="#/add" class="button mainButton">Add</a>
-            
+
             <table>
                 <thead>
                 <tr>
@@ -82,33 +80,34 @@
                 </thead>
                 <tbody>
                 {{for albums}}
-                    <tr>
-                        <td>{{:id}}</td>
-                        <td>{{:title}}</td>
-                        <td>{{:artists}}</td>
-                        <td><img src="{{:image}}"></td>
-                        <td><textarea>{{:description}}</textarea></td>
-                        <td>
-                            <!-- href="#" indica que el salto será a la página actual -->
-                            <!-- data-id="" envía junto con el evento el valor id="" -->
-                            <a href="#/modify?id={{:id}}"  class="button warning">Modify</a>
-                            <a href="#/delete?id={{:id}}"  class="button error">Delete</a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{:id}}</td>
+                    <td>{{:title}}</td>
+                    <td>{{:artists}}</td>
+                    <td><img src="{{:image}}"></td>
+                    <td><textarea>{{:description}}</textarea></td>
+                    <td>
+                        <!-- href="#" indica que el salto será a la página actual -->
+                        <!-- data-id="" envía junto con el evento el valor id="" -->
+                        <a href="#/modify?id={{:id}}" class="button warning">Modify</a>
+                        <a href="#/delete?id={{:id}}" class="button error">Delete</a>
+                    </td>
+                </tr>
                 {{/for}}
                 </tbody>
             </table>
         </script>
 
         <div id="app"></div>
+
+        <a href="/" class="button success mainButton">Inicio</a>
     </div>
 </div>
-
 
 <!-- SCRIPTS DEL USUARIO -->
 <script>
     // Creacin del router como una constante
-    const router = new Navigo('/', {hash:true});
+    const router = new Navigo('/', {hash: true});
 
     // SE definen las rutas
     router
@@ -118,7 +117,6 @@
         .on('/modify', showModifyAlbumsForm)
         .on('/delete', deleteAlbums)
         .resolve();
-
 
     // ADD
     function addAlbumForm(event) {
@@ -133,6 +131,7 @@
             console.log(error)
         })
     }
+
     function addAlbums() {
 
         $.getJSON('/api/artists/', function (artists) {
@@ -151,7 +150,7 @@
         let id = params.params.id;
 
         $.ajax({
-            url:'/api/albums/' + id,
+            url: '/api/albums/' + id,
             type: 'DELETE'
         }).then(function (result) {
             router.navigate('/')
@@ -161,7 +160,7 @@
     }
 
     // MODIFY
-    function getModifyAlbumsFormParams(event){
+    function getModifyAlbumsFormParams(event) {
         event.preventDefault();
 
         let form = $('#modifyAlbumForm');
@@ -170,7 +169,7 @@
 
         let id = $(this).data("id");
 
-        $.post('/api/albums/' + id, parameters, function (data){
+        $.post('/api/albums/' + id, parameters, function (data) {
             showAlbums()
         }).catch(function (error) {
             console.log(error)
@@ -178,7 +177,8 @@
 
 
     }
-    function showModifyAlbumsForm(params){
+
+    function showModifyAlbumsForm(params) {
 
         let id = params.params.id;
 
@@ -210,7 +210,6 @@
 
             let html = $("#show_albums_template").render(data);
             $("#app").html(html);
-
 
         });
     }

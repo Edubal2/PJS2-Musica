@@ -8,19 +8,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js"
+            referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <h1>Songs</h1>
 
 <div class="container">
     <div class="row">
-        <a href="/" class="button success">Inicio</a>
-        <br>
-        <br>
-        <!-- Modify songs -->
+        <!-- Modify Songs -->
         <script id="modify_songs_template" type="text/x-jsrender-template">
-            <h1>Modify Album</h1>
+            <h1>Modify Album {{:song.id}}</h1>
             <form id="modifySongsForm">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" value="{{:song.title}}">
@@ -40,7 +38,7 @@
                 <input type="submit" class="add_songs_submit" value="modificar" data-id="{{:song.id}}">
             </form>
         </script>
-        <!-- Add songs-->
+        <!-- Add Songs-->
         <script id="add_songs_template" type="text/x-jsrender-template">
             <h1>Insert Song </h1>
             <form id="add_songs_form">
@@ -62,7 +60,7 @@
                 <input type="submit" id="add_songs_form_submit">
             </form>
         </script>
-        <!-- Show songs -->
+        <!-- Show Songs -->
         <script id="show_songs_template" type="text/x-jsrender-template">
 
             <a href="#/add" class="button mainButton">Add</a>
@@ -97,12 +95,14 @@
         </script>
 
         <div id="app"></div>
+
+        <a href="/" class="button success mainButton">Inicio</a>
     </div>
 </div>
 
 <script>
 
-    const router = new Navigo('/', {hash:true});
+    const router = new Navigo('/', {hash: true});
 
     // SE definen las rutas
     router
@@ -114,7 +114,7 @@
         .resolve();
 
     // MODIFY
-    function getModifySongsFormParams(event){
+    function getModifySongsFormParams(event) {
         event.preventDefault();
 
         let form = $('#modifySongsForm');
@@ -123,7 +123,7 @@
 
         let id = $(this).data("id");
 
-        $.post('/api/songs/' + id, parameters, function (data){
+        $.post('/api/songs/' + id, parameters, function (data) {
             showSongs()
         }).catch(function (error) {
             console.log(error)
@@ -131,7 +131,8 @@
 
 
     }
-    function showModifySongsForm(params){
+
+    function showModifySongsForm(params) {
 
         let id = params.params.id;
 
@@ -156,7 +157,6 @@
         });
     }
 
-
     // ADD
     function addSongsForm(event) {
         event.preventDefault();
@@ -170,7 +170,8 @@
             console.log(error)
         })
     }
-    function addSongs(){
+
+    function addSongs() {
 
 
         $.getJSON('/api/albums/', function (albums) {
@@ -182,11 +183,11 @@
     }
 
     // DELETE
-    function deleteSongs(params){
+    function deleteSongs(params) {
         let id = params.params.id;
 
         $.ajax({
-            url:'/api/songs/' + id,
+            url: '/api/songs/' + id,
             type: 'DELETE'
         }).then(function (result) {
             router.navigate('/')
