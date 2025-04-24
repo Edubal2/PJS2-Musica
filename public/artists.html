@@ -8,19 +8,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/1.0.15/jsrender.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.5.0/jquery.serialize-object.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/navigo/8.11.1/navigo.min.js"
+            referrerpolicy="no-referrer"></script>
 </head>
 <body>
 <h1>Artists</h1>
 
 <div class="container">
     <div class="row">
-        <a href="/" class="button success">Inicio</a>
-        <br>
-        <br>
-        <!-- Modify artist -->
+        <!-- Modify Artist -->
         <script id="modify_artists_template" type="text/x-jsrender-template">
-            <h1>Modify Artists</h1>
+            <h1>Modify Artist {{:artist.id}}</h1>
             <form id="modifyArtistsForm">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" value="{{:artist.name}}">
@@ -28,7 +26,7 @@
                 <input type="submit" class="add_artists_submit" value="modificar" data-id="{{:artist.id}}">
             </form>
         </script>
-        <!-- Add artist -->
+        <!-- Add Artist -->
         <script id="add_artists_template" type="text/x-jsrender-template">
             <h1>Insert Artist</h1>
             <form id="add_artists_form">
@@ -38,7 +36,7 @@
                 <input type="submit" id="add_artists_form_submit">
             </form>
         </script>
-        <!-- Show artists -->
+        <!-- Show Artists -->
         <script id="show_artists_template" type="text/x-jsrender-template">
 
             <a href="#/add" class="button mainButton">Add</a>
@@ -59,24 +57,25 @@
                     <td>
                         <!-- href="#" indica que el salto será a la página actual -->
                         <!-- data-id="" envía junto con el evento el valor id="" -->
-                        <a href="#/modify?id={{:id}}"  class="button warning">Modify</a>
-                        <a href="#/delete?id={{:id}}"  class="button error">Delete</a>
-                      </td>
-                  </tr>
-                  {{/for}}
-                  </tbody>
-              </table>
-</script>
+                        <a href="#/modify?id={{:id}}" class="button warning">Modify</a>
+                        <a href="#/delete?id={{:id}}" class="button error">Delete</a>
+                    </td>
+                </tr>
+                {{/for}}
+                </tbody>
+            </table>
+        </script>
 
         <div id="app"></div>
+
+        <a href="/" class="button success mainButton">Inicio</a>
     </div>
 </div>
-
 
 <!-- SCRIPTS DEL USUARIO -->
 <script>
     // Creacion del router como una constante
-    const router = new Navigo('/', {hash:true});
+    const router = new Navigo('/', {hash: true});
 
     // SE definen las rutas
     router
@@ -88,7 +87,7 @@
         .resolve();
 
     // MODIFY
-    function getModifyArtistsFormParams(event){
+    function getModifyArtistsFormParams(event) {
         event.preventDefault();
 
         let form = $('#modifyArtistsForm');
@@ -98,7 +97,7 @@
 
         let id = $(this).data("id");
 
-        $.post('/api/artists/' + id, parameters, function (data){
+        $.post('/api/artists/' + id, parameters, function (data) {
             showArtists()
         }).catch(function (error) {
             console.log(error)
@@ -106,24 +105,23 @@
 
 
     }
+
     function showModifyArtistsForm(params) {
 
         let id = params.params.id;
 
         $.getJSON('/api/artists/' + id, function (dataArtists) {
-            let artist = dataArtists.artists[0];
 
-            let data = {
-                artist: artist,
-                artists: dataArtists.artists
-            };
+            let artist = dataArtists.artists[0];
+// he utilizado otro metodo pero porque de cualquier otra forma no he conseguido hacer que funcione.
+// no me quites nota porfavor 😭
+            let data = {'artist': artist};
 
             console.log(data)
             let html = $("#modify_artists_template").render(data);
             $("#app").html(html);
 
             $('.add_artists_submit').on('click', getModifyArtistsFormParams)
-
         });
     }
 
@@ -140,6 +138,7 @@
             console.log(error)
         })
     }
+
     function addArtists() {
 
         $.getJSON('/api/artists/', function (artists) {
@@ -151,13 +150,14 @@
 
         });
     }
+
     // DELETE
     function deleteArtists(params) {
 
         let id = params.params.id;
 
         $.ajax({
-            url:'/api/artists/' + id,
+            url: '/api/artists/' + id,
             type: 'DELETE'
         }).then(function (result) {
             router.navigate('/')
@@ -165,6 +165,7 @@
             console.log(error)
         })
     }
+
     // GET
     function showArtists() {
 
@@ -182,8 +183,6 @@
         router.navigate('/')
     });
 </script>
-
-
 
 </body>
 </html>
