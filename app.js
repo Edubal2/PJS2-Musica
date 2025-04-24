@@ -43,6 +43,7 @@ var db = require('knex')(  {
 // RUTAS DEL USUARIO
 
  //Rutas para artists
+ // GET
 app.get('/api/artists', function (req, res) {
     db.select('ar.id', 'ar.name')
       .from('artists as ar')
@@ -56,9 +57,78 @@ app.get('/api/artists', function (req, res) {
       });
 });
 
-// Rutas para albums
-// Todos
+//Seleccion por id
+ app.get('/api/artists/:id', function (req, res) {
 
+     let id = parseInt(req.params.id);
+     db.select('ar.id', 'ar.name')
+         .from('artists as ar')
+         .where('ar.id', id)
+         .then(function(data) {
+
+             result = {}
+             result.artists = data;
+             res.json(result)
+
+
+         });
+ });
+
+ // DELETE
+ app.delete('/api/artists/:id', function (req, res) {
+
+     // Como es un string lo convertimos en entero
+     let id = parseInt(req.params.id);
+     console.log('WILL DELETE' + id);
+
+     db.delete()
+         .from('artists')
+         .where('id', id)
+         .then(function(data) {
+             res.json(data);
+         }).catch(function (error) {
+         console.log(error)
+     });
+ });
+
+ // ADD
+ app.post('/api/artists', function (req, res) {
+
+     let data_form = req.body;
+     console.log('app.je app.post(). Params:', data_form)
+
+     db.insert(data_form)
+         .into('artists')
+         .then(function(data) {
+
+             res.json(data)
+             console.log(data)
+         }).catch(function (error) {
+         console.log(error)
+     });
+
+ });
+
+ // Modify
+ app.post('/api/artists/:id', function (req, res) {
+     let id = req.params.id;
+     let artistData = req.body;
+
+     db('artists')
+         .update(artistData)
+         .where('id', id)
+         .then(function(data) {
+             res.json(data)
+         })
+         .catch(function (error) {
+             logger.error('ERROR:', error);
+         })
+ });
+
+
+
+ // Rutas para albums
+// GET
 app.get('/api/albums', function (req, res) {
     db.select('al.id', 'al.title', 'ar.name as artists', 'al.image', 'al.description' )
       .from('albums as al')
@@ -77,7 +147,22 @@ app.get('/api/albums', function (req, res) {
     });
 });
 
-// ADD
+ // Seleccion por id
+ app.get('/api/albums/:id', function (req, res) {
+
+     // Como es un string lo convertimos en entero
+     let id = parseInt(req.params.id);
+     db.select('al.id', 'al.title', 'al.image', 'al.description' )
+         .from('albums as al')
+         .where('al.id', id)
+         .then(function(data) {
+             res.json(data);
+         }).catch(function (error) {
+         console.log(error)
+     });
+ });
+
+ // ADD
  app.post('/api/albums', function (req, res) {
 
      let data_form = req.body;
@@ -111,24 +196,6 @@ app.get('/api/albums', function (req, res) {
         })
  });
 
-
-
-// Seleccion por id
- app.get('/api/albums/:id', function (req, res) {
-
-     // Como es un string lo convertimos en entero
-     let id = parseInt(req.params.id);
-     db.select('al.id', 'al.title', 'al.image', 'al.description' )
-         .from('albums as al')
-         .where('al.id', id)
-         .then(function(data) {
-             res.json(data);
-         }).catch(function (error) {
-         console.log(error)
-     });
- });
-
-
 // DELETE
  app.delete('/api/albums/:id', function (req, res) {
 
@@ -148,23 +215,24 @@ app.get('/api/albums', function (req, res) {
  });
 
 
-
-
 // Rutas para songs
 // GET
-app.get('/api/songs/normal', function (req, res) {
-    db.select('so.id', 'so.title', 'so.length')
-      .from('songs as so')
-      .then(function(data) {
+ app.get('/api/songs/', function (req, res) {
 
-          result = {}
-          result.songs = data;
-          res.json(result)
+     db.select('so.id','so.title', 'so.length', 'al.title as album', 'ar.name as artist')
+         .from('songs as so')
+         .join('albums as al', 'so.album_id', 'al.id')
+         .join('artists as ar', 'al.artist_id', 'ar.id')
+         .then(function(data) {
 
-      });
-});
+             result = {}
+             result.songs = data;
+             res.json(result)
 
-// DELETE
+
+         });
+ });
+
 // Seleccion por id
  app.get('/api/songs/:id', function (req, res) {
 
@@ -179,7 +247,7 @@ app.get('/api/songs/normal', function (req, res) {
      });
  });
 
-
+ // DELETE
  app.delete('/api/songs/:id', function (req, res) {
 
      let id = parseInt(req.params.id);
@@ -197,7 +265,7 @@ app.get('/api/songs/normal', function (req, res) {
  });
 
 // ADD
- app.post('/api/songs', function (req, res) {
+ app.post('/api/songs/', function (req, res) {
 
      let data_form = req.body;
      console.log('app.je app.post(). Params:', data_form)
@@ -217,10 +285,10 @@ app.get('/api/songs/normal', function (req, res) {
 // Modify
  app.post('/api/songs/:id', function (req, res) {
      let id = req.params.id;
-     let albumData = req.body;
+     let songData = req.body;
 
      db('Songs')
-         .update(albumData)
+         .update(songData)
          .where('id', id)
          .then(function(data) {
              res.json(data)
@@ -234,21 +302,6 @@ app.get('/api/songs/normal', function (req, res) {
 
 // Pedir los datos completos de todas las canciones
 
-app.get('/api/songs', function (req, res) {
-
-    db.select('so.id','so.title', 'so.length', 'al.title as album', 'ar.name as artist')
-    .from('songs as so')
-        .join('albums as al', 'so.album_id', 'al.id')
-        .join('artists as ar', 'al.artist_id', 'ar.id')
-        .then(function(data) {
-
-            result = {}
-            result.songs = data;
-            res.json(result)
-
-
-        });
-});
 
 // Ver los datos en html
 
